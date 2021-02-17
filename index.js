@@ -1,21 +1,17 @@
 import express from 'express';
-import bodyParser from 'body-parser';
-import mongoose from 'mongoose';
+var MongoClient = require('mongodb').MongoClient;
+var url = "mongodb://localhost:27017/";
+var PORT = 8080
 
-const app = express();
-const PORT = 4000;
+var app = express()
+var conn = MongoClient.connect(url) // returns a Promise
 
-// bodyparser setup
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
-try {
-    await mongoose.connect('mongodb://localhost/productsdb', { useNewUrlParser: true, useUnifiedTopology: true });
-} catch (error) {
-    console.log(error);
-}
-mongoose.Promise = global.Promise;
-
+app.get('/users', function (req, res) {
+    conn.then(client => client.db('svitlana').collection('users').find({}).toArray(function (err, docs) {
+        if (err) { console.error(err) }
+        res.send(JSON.stringify(docs))
+    }))
+})
 app.get('/', (req, res) =>
     res.send(`Store server running on port ${PORT}`)
 );
